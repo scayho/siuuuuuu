@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 15:59:07 by hchahid           #+#    #+#             */
-/*   Updated: 2022/11/02 17:22:32 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/18 01:35:48 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,13 @@ typedef struct s_redi
 	int pid;
 } t_redi;
 
+typedef struct s_expnd
+{
+	int		index;
+	int		i;
+	char	*tmp;
+} t_expnd;
+
 void ffree(char **s);
 char *join_list(t_arg *cmd);
 char    *eraseqout(char *buf, int len);
@@ -69,7 +76,7 @@ int are_qouted(char *str, char  *target);
 int	check_qotes(char *str);
 
 
-int outputCheck(char *s, int hd);
+int outputcheck(char *s, int hd);
 
 
 int redirection_syntax(char *buf);
@@ -79,14 +86,14 @@ char	*exlude_name(char	*str, int start, int end);
 // char    *remove_qoutes(char *buf);
 t_arg    *remove_qoutes(t_arg				*command);
 int is_empty(char   *str);
-char	*expand_it(char *buf, char *tmp, int start, int end, t_env **env_p);
+char	*expand_it(char *buf, t_expnd c, t_env **env_p);
 void	remove_path(void);
 char	*remove_arg(char *buf, int start, int end);
 
 /*-----------------------signals-----------------------*/
 void	sighandle(int	sig);
-void	sigInit();
-void	sigDefault();
+void	siginit();
+void	sigdefault();
 
 /*-----------------------enviroment_variables---------------*/
 void	set_env_vars(char **envp, t_env **env_p);
@@ -138,7 +145,7 @@ int		if_directory(char	*buf);
 
 int is_quoted(char *s, char *mark);
 
-int	isThereRedirection(t_arg *s);
+int	isthereredirection(t_arg *s);
 char *join_list(t_arg *cmd);
 
 int	execute_redirection(char *buf, t_env **env_p, char *file);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   updates_for_env_after_export.c                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 21:13:16 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/30 21:55:57 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/18 02:21:54 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ int	does_env_exist(t_env **env_p, char *env_var)
 	compared_to = get_e_var_name(env_var);
 	if (compared_to[ft_strlen(compared_to) - 1] == '+')
 	{
-		compared_to[ft_strlen(compared_to)] = 'k';
-		compared_to[ft_strlen(compared_to) - 1] = '\0';
+		compared_to[ft_strlen(compared_to) - 1] = 0;
+		compared_to[ft_strlen(compared_to) + 1] = 1;
 	}
 	if (!ft_strncmp(compared_to, "PATH", 5))
 	{
@@ -62,13 +62,12 @@ int	does_env_exist(t_env **env_p, char *env_var)
 	}
 	while (iter)
 	{
-		if (!ft_strncmp(compared_to, iter->e_name, 1 + ft_strlen(iter->e_name)))
+		if (!ft_strcmp(compared_to, iter->e_name))
 		{
-			if (compared_to[ft_strlen(compared_to) + 1] == 'k')
+			if (compared_to[ft_strlen(compared_to) + 1] == 1)
 			{
-				tmp1 = iter->e_value;
-				iter->e_value = ft_strjoin(iter->e_value, ft_strchr(env_var, '=') + 1);
-				free(tmp1);
+				iter->e_value = join_free(iter->e_value,
+						get_e_var_value(env_var));
 			}
 			else
 				change_env_value(iter, env_var);

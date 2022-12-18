@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   replace_env_buf.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 17:33:26 by hchahid           #+#    #+#             */
-/*   Updated: 2022/11/01 03:03:49 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/18 01:35:10 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *sub_str(char *s, int start, int end)
+char	*sub_str(char *s, int start, int end)
 {
 	char	*p;
 	int		i;
@@ -40,7 +40,6 @@ char	*remove_arg(char *buf, int start, int end)
 		return (NULL);
 	while (i < start - 1)
 	{
-		
 		ret[i] = buf[i];
 		i++;
 	}
@@ -68,39 +67,38 @@ int	env_exist(t_env **env_p, char *name)
 	return (0);
 }
 
-char	*expand_it(char *buf, char *tmp, int start, int end, t_env **env_p)
+// char	*expand_it(char *buf, char *tmp, int start, int end, t_env **env_p)
+char	*expand_it(char *buf, t_expnd c, t_env **env_p)
 {
 	char	*ret;
 	char	*env;
-	int 	len;
+	int		len;
 	int		i;
 	int		j;
 
 	i = -1;
 	j = 0;
-	env = extract_evar_value(*env_p, tmp);
-	len = ft_strlen (buf) + end - start + 1 + ft_strlen (env);
+	c.i--;
+	env = extract_evar_value(*env_p, c.tmp);
+	len = ft_strlen (buf) + c.i - c.index + 1 + ft_strlen (env);
 	ret = malloc (len + 1);
 	if (!ret)
 		return (NULL);
-	while (++i < start - 1)
+	while (++i < c.index - 1)
 		ret[i] = buf[i];
 	while (env[j])
 		ret[i++] = env[j++];
-	j = end + 1;
+	j = c.i + 1;
 	while (buf[j])
 		ret[i++] = buf[j++];
 	ret[i] = '\0';
 	return (ret);
 }
 
-
-char	*replace_exstat_val(char *buf, int	start, int finish)
+char	*replace_exstat_val(char *buf, int start, int finish)
 {
 	char	*r;
-	// int		i;
 
-	// i = 0;
 	buf[start] = 0;
 	r = ft_strdup(buf);
 	if (!r)
@@ -113,150 +111,140 @@ char	*replace_exstat_val(char *buf, int	start, int finish)
 		return (perror(r), NULL);
 	return (r);
 }
+// n9ass lines
+
+// int	replace_env_in_buf(char **buf, char *tmp, t_env **env, int i)
+// {
+// 	char	*hold;
+
+// 	hold = buf;
+// 	buf = expand_it(buf, tmp, index, i - 1, env);
+// 	i = index;
+// 	i += ft_strlen(extract_evar_value(*env, tmp));
+// 	free(hold);
+// }
+
+int	replace_exit_status(char **buf, int i)
+{
+	char	*hold;
+
+	hold = *buf;
+	*buf = replace_exstat_val(*buf, i, i + 2);
+	i += ft_strlen(ft_itoa(g_var.exit_status));
+	free(hold);
+	return (i);
+}
+
+int	cut_false_env(char **buf, int i, int index)
+{
+	char	*hold;
+
+	hold = *buf;
+	*buf = remove_arg(*buf, index, i - 1);
+	i = index - 1;
+	free(hold);
+	return (i);
+}
+
+int	is_there_exitstat_check(char *buf, int i)
+{
+	if (buf[i] == '$' && buf[i + 1] == '?'
+		&& (!ft_isalnum(buf[i + 2]) || buf[i + 2] != '_'))
+		return (1);
+	return (0);
+}
+
+t_expnd	ds(int i, int index, char *tmp)
+{
+	t_expnd	s;
+
+	s.i = i;
+	s.index = index;
+	s.tmp = tmp;
+	return (s);
+}
+
+// void	init_expnd()
+
+char	*replace_var(char *buf, t_expnd c, t_env **env)
+{
+	char	*hold;
+
+	hold = NULL;
+	c.i++;
+	c.index = c.i;
+	while (buf[c.i] && (ft_isalnum(buf[c.i]) || buf[c.i] == '_'))
+		c.i++;
+	c.tmp = sub_str(buf, c.index, c.i - 1);
+	if (!c.tmp)
+		return (perror(c.tmp), NULL);
+	else if (env_exist(env, c.tmp))
+	{
+		hold = buf;
+		buf = expand_it(buf, c, env);
+		c.i = c.index;
+		c.i += ft_strlen(extract_evar_value(*env, c.tmp));
+		free(hold);
+	}
+	else
+		c.i = cut_false_env(&buf, c.i, c.index);
+	free(c.tmp);
+	c.i -= 1;
+	return (buf);
+}
 
 char	*replace_env(char *buf, t_env **env)
 {
-	char	*tmp;
-	char	*hold;
-	// char	*wild;
-	// char	*wild_free;
-	int		index;
-	int		i;
-	
-	i = 0;
-	// printf("[%s]\n", buf);
-	while (buf[i])
+	t_expnd	c;
+
+	c = ds(0, 0, NULL);
+	while (buf[c.i])
 	{
-		
-		if (buf[i] == '$' && buf[i + 1] == '?' && (!ft_isalnum(buf[i + 2]) || buf[i + 2] != '_'))
-		{
-			hold = buf;
-			buf = replace_exstat_val(buf, i , i + 2);
-			i += ft_strlen(ft_itoa(g_var.exit_status));
-			free(hold);
-		}
-		if (buf[i] == '$' && buf[i + 1] && buf[i + 1] != ' ')
-		{
-			// printf("suuu\n");
-			i++;
-			index = i;
-			while (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
-				i++;
-			tmp = sub_str(buf, index, i - 1);
-			if (!tmp)
-				return (perror(tmp), NULL);
-			else if  (env_exist(env, tmp))
-			{
-				hold = buf;
-				buf = expand_it(buf, tmp, index, i - 1, env);
-				i = index;
-				i += ft_strlen(extract_evar_value(*env, tmp));
-				free(hold);
-			}
-			else
-			{
-				hold = buf;
-				buf = remove_arg(buf, index, i - 1);
-				i = index - 1;
-				free(hold);
-			}
-			free(tmp);
-			i -= 1;
-		}
-		// if (buf[i] == '*' && (is_space(buf[i - 1]) || !buf[i - 1]) && (is_space(buf[i + 1]) || !buf[i + 1]) && !is_quoted(buf, &buf[i]))
-		// {
-        //     wild = wildcard();
-        //     buf[i] = '\0';
-        //     wild_free = buf;
-        //     buf = ft_strjoin(buf, wild);
-        //     // free(wild);
-        //     buf = ft_strjoin(buf, wild_free + i + 1);
-        //     free(wild_free);
-        //     i += ft_strlen(wild);
-        //     free(wild);
-		// }
-		i++;
+		if (is_there_exitstat_check(buf, c.i))
+			c.i = replace_exit_status(&buf, c.i);
+		if (buf[c.i] == '$' && buf[c.i + 1] && buf[c.i + 1] != ' ')
+			buf = replace_var(buf, c, env);
+		c.i++;
 	}
-	return(buf);
+	return (buf);
+}
+
+char	*replace_wild_card(char *buf, t_expnd c, char *wild)
+{
+	char	*wild_free;
+
+	wild_free = buf;
+	buf = ft_strjoin(buf, wild);
+	free(wild_free);
+	wild_free = buf;
+	buf = ft_strjoin(buf, wild_free + c.i + 1);
+	free(wild_free);
+	return (buf);
 }
 
 char	*full_replace_env(char *buf, t_env **env)
 {
-	char	*tmp;
-	char	*hold;
 	char	*wild;
-	char	*wild_free;
-	int		index;
-	int		i;
-	
-	i = 0;
-	// printf("[%s]\n", buf);
-	// buf = ft_strjoin(" ", buf);
-	// buf = ft_strjoin(buf, " ");
-	while (buf[i])
+	t_expnd	c;
+
+	c = ds(0, 0, NULL);
+	while (buf[c.i])
 	{
-		
-		if (buf[i] == '$' && buf[i + 1] == '?' && (!ft_isalnum(buf[i + 2]) || buf[i + 2] != '_'))
+		if (is_there_exitstat_check(buf, c.i))
+			c.i = replace_exit_status(&buf, c.i);
+		if (buf[c.i] == '$' && buf[c.i + 1] && buf[c.i + 1] != ' ')
+			buf = replace_var(buf, c, env);
+		if (buf[c.i] == '*' && c.i == 0
+			&& (is_space(buf[c.i + 1]) || !buf[c.i + 1])
+			&& !is_quoted(buf, &buf[c.i]))
 		{
-			hold = buf;
-			buf = replace_exstat_val(buf, i , i + 2);
-			i += ft_strlen(ft_itoa(g_var.exit_status));
-			free(hold);
+			wild = wildcard();
+			buf[c.i] = '\0';
+			buf = replace_wild_card(buf, c, wild);
+			c.i += ft_strlen(wild);
+			free(wild);
 		}
-		if (buf[i] == '$' && buf[i + 1] && buf[i + 1] != ' ')
-		{
-			// printf("suuu\n");
-			i++;
-			index = i;
-			while (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
-				i++;
-			tmp = sub_str(buf, index, i - 1);
-			if (!tmp)
-				return (perror(tmp), NULL);
-			else if  (env_exist(env, tmp))
-			{
-				hold = buf;
-				buf = expand_it(buf, tmp, index, i - 1, env);
-				i = index;
-				i += ft_strlen(extract_evar_value(*env, tmp));
-				free(hold);
-			}
-			else
-			{
-				hold = buf;
-				buf = remove_arg(buf, index, i - 1);
-				i = index - 1;
-				free(hold);
-			}
-			free(tmp);
-			i -= 1;
-		}
-		if (buf[i] == '*' && i == 0 && (is_space(buf[i + 1]) || !buf[i + 1]) && !is_quoted(buf, &buf[i]))
-		{
-            wild = wildcard();
-            buf[i] = '\0';
-            wild_free = buf;
-            buf = ft_strjoin(buf, wild);
-            free(wild_free);
-            wild_free = buf;
-            buf = ft_strjoin(buf, wild_free + i + 1);
-            free(wild_free);
-            i += ft_strlen(wild);
-            free(wild);
-		}
-		// else if (buf[i] == '*' && (is_space(buf[i - 1]) || !buf[i - 1]) && (is_space(buf[i + 1]) || !buf[i + 1]) && !is_quoted(buf, &buf[i]))
-		// {
-        //     wild = wildcard();
-        //     buf[i] = '\0';
-        //     wild_free = buf;
-        //     buf = ft_strjoin(buf, wild);
-        //     // free(wild);
-        //     buf = ft_strjoin(buf, wild_free + i + 1);
-        //     free(wild_free);
-        //     i += ft_strlen(wild);
-        //     free(wild);
-		// }
-		i++;
+		c.i++;
 	}
-	return(buf);
+	return (buf);
 }

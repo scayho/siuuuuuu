@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   env_vars1.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/26 20:18:15 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/30 21:48:34 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/18 00:12:42 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *extract_evar_value(t_env *env, char *name)
+char	*extract_evar_value(t_env *env, char *name)
 {
 	while (env)
 	{
@@ -36,7 +36,7 @@ int	arg_len(char **s)
 void	remove_path(void)
 {
 	char	**tmp;
-	
+
 	tmp = g_var.paths;
 	while (*tmp)
 		free(*tmp++);
@@ -59,10 +59,8 @@ void	display_with_declare(t_env *p)
 
 int	valid_export(char *s)
 {
-	char *p;
-	// int	i;
+	char	*p;
 
-	// i = 0;
 	p = NULL;
 	p = ft_strchr(s, '=');
 	if (!p || s[0] == '=' || s[0] == '+')
@@ -83,9 +81,15 @@ int	valid_export(char *s)
 	return (1);
 }
 
+void	err_malloc_msg(void)
+{
+	ft_putstr_fd("Error occur with allocation\n", 2);
+}
+
+// n9ass lines
 char	**get_cmd_arg_size(char *buf)
 {
-	char **ret;
+	char	**ret;
 	int		i;
 	int		j;
 
@@ -95,35 +99,23 @@ char	**get_cmd_arg_size(char *buf)
 		i++;
 	ret = malloc(sizeof (char *) * 2);
 	if (!ret)
-	{
-		printf("Error occur with allocation\n");
-		return (NULL);
-	}
+		return (err_malloc_msg(), NULL);
 	ret[0] = malloc (i);
 	if (!ret[0])
-	{
-		printf("Error occur with allocation\n");
-		free(ret);
-		return (NULL);
-	}
+		return (err_malloc_msg(), free(ret), NULL);
 	while (is_space(buf[i]) && buf[i])
 		i++;
 	while (buf[i++])
 		j++;
 	ret[1] = malloc (j + 1);
 	if (!ret[1])
-	{
-		printf("Error occur with allocation\n");
-		free(ret[0]);
-		free(ret);
-		return (NULL);
-	}
+		return (err_malloc_msg(), free(ret[0]), free(ret), NULL);
 	return (ret);
 }
 
-char **cmd_arg(char *buf)
+char	**cmd_arg(char *buf)
 {
-	char **ret;
+	char	**ret;
 	int		i;
 	int		j;
 
@@ -164,7 +156,7 @@ char	*get_less_pwd_evar(t_env *p)
 	char	*s;
 	int		i;
 
-	i = 0;	
+	i = 0;
 	if (!p)
 		return (NULL);
 	while (p)
@@ -184,7 +176,7 @@ char	*get_less_pwd_evar(t_env *p)
 	return (NULL);
 }
 
-void	get_pre_dir()
+void	get_pre_dir(void)
 {
 	char	*tmp;
 	int		i;
@@ -204,55 +196,12 @@ void	get_pre_dir()
 	free(tmp);
 }
 
-void	join_pwd(t_env **env, char *dir)
-{
-	t_env	*iter;
-	char	*r;
-	int		i;
-	int		j;
-
-	iter = *env;
-	if (!env || !*env)
-		return ;
-	while (iter)
-	{
-		if (!ft_strcmp("PWD", iter->e_name))
-			break;
-		iter = iter->next;
-	}
-	i = ft_strlen(iter->e_value);
-	j = ft_strlen(dir);
-	if (iter->e_value[i - 1] != '/')
-		r = malloc ((i + j + 2) * sizeof(char));
-	else
-		r = malloc ((i + j + 1) * sizeof(char));
-	if (!r)
-	{
-		perror(r);
-		return ;
-	}
-	i = 0;
-	while (iter->e_value[i])
-	{
-		r[i] = iter->e_value[i];
-		i++;
-	}
-	if (iter->e_value[i - 1] != '/')
-		r[i++] = '/';
-	j = 0;
-	while (dir[j])
-		r[i++] = dir[j++];
-	r[i] = '\0';
-	free(iter->e_value);
-	iter->e_value = r;
-}
-
 void	 join_err_pwd(char *dir)
 {
 	char	*r;
 	int		i;
 	int		j;
-	
+
 	i = ft_strlen(g_var.err_pwd);
 	j = ft_strlen(dir);
 	if (g_var.err_pwd[i - 1] != '/')
@@ -264,22 +213,14 @@ void	 join_err_pwd(char *dir)
 		perror(r);
 		return ;
 	}
-	i = 0;
-	while (g_var.err_pwd[i])
-	{
-		r[i] = g_var.err_pwd[i];
-		i++;
-	}
+	ft_memcpy(r, g_var.err_pwd, i);
 	if (g_var.err_pwd[i - 1] != '/')
 		r[i++] = '/';
-	j = 0;
-	while (dir[j])
-		r[i++] = dir[j++];
-	r[i] = '\0';
+	r[i] = 0;
+	r = join_free(r, dir);
 	free(g_var.err_pwd);
 	g_var.err_pwd = r;
 }
-
 
 int	count_backing(char *dir)
 {
@@ -290,52 +231,15 @@ int	count_backing(char *dir)
 	count = 0;
 	while (dir[i])
 	{
-		if ((dir[i] && dir[i] == '.') &&  (dir[i + 1] == '.' && dir[i + 1]) &&
-			((dir[i + 2] == '/' && dir[i + 2]) || !dir[i + 2]))
+		if ((dir[i] && dir[i] == '.') && (dir[i + 1] == '.' && dir[i + 1])
+			&& ((dir[i + 2] == '/' && dir[i + 2]) || !dir[i + 2]))
 		{
 			count++;
-			i += 3;	
+			i += 3;
 		}
-		else if ((dir[i] && dir[i] == '.') &&  ((dir[i + 1] && dir[i + 1] == '/') || !dir[i + 1]))
+		else if ((dir[i] && dir[i] == '.')
+			&& ((dir[i + 1] && dir[i + 1] == '/') || !dir[i + 1]))
 			i += 2;
 	}
 	return (count);
-}
-
-void	join_e_var(t_env **env, char *e_name, char *s)
-{
-	t_env	*iter;
-	char	*r;
-	int		i;
-	int		j;
-
-	iter = *env;
-	if (!env || !*env)
-		return ;
-	while (iter)
-	{
-		if (!ft_strcmp(e_name, iter->e_name))
-			break;
-		iter = iter->next;
-	}
-	i = ft_strlen(iter->e_value);
-	j = ft_strlen(s);
-	r = malloc ((i + j + 1) * sizeof(char));
-	if (!r)
-	{
-		perror(r);
-		return ;
-	}
-	i = 0;
-	while (iter->e_value[i])
-	{
-		r[i] = iter->e_value[i];
-		i++;
-	}
-	j = 0;
-	while (s[j])
-		r[i++] = s[j++];
-	r[i] = '\0';
-	free(iter->e_value);
-	iter->e_value = r;
 }

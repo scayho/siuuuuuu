@@ -30,29 +30,29 @@ char	*ft_strchr(const char *s, int c);
 //     return (0);
 // }
 
-int unclosed(char *s)
-{
-    char    quote;
-    int     fail;
-    int     i;
+// int unclosed(char *s)
+// {
+// 	char	quote;
+// 	int		fail;
+// 	int		i;
 
-    fail = 0;
-    i = 0;
-    while (s[i])
-    {
-        if (s[i] == '"' || s[i] == '\'')
-        {
-            quote = s[i++];
-            fail = 1;
-            while (s[i] && s[i] != quote)
-                i++;
-            if (s[i] == quote)
-                fail = 0;
-        }
-        i++;
-    }
-    return (fail);
-}
+// 	fail = 0;
+// 	i = 0;
+// 	while (s[i])
+// 	{
+// 		if (s[i] == '"' || s[i] == '\'')
+// 	{
+// 	quote = s[i++];
+// 	fail = 1;
+// 	while (s[i] && s[i] != quote)
+// 		i++;
+// 	if (s[i] == quote)
+// 	fail = 0;
+// 	}
+// 	i++;
+// 	}
+// 	return (fail);
+// }
 
 // int main()
 // {

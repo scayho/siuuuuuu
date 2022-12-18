@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 17:59:52 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/31 00:42:28 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/17 19:51:12 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ void    pipe_it(t_fd fd_pipe, char *ag, t_env **env_p)
 		{
 			if (first_heredoc(ag, 2) != -1)
 				inputFlag = 1;
-			if (outputCheck(ag, 2) != -1)
+			if (outputcheck(ag, 2) != -1)
 				outputFlag = 1;
 			file = exec_redirection_pipe(get_args(ag, env_p), &ag, env_p, pipe_redi);
 		}
@@ -145,7 +145,7 @@ void    pipe_it(t_fd fd_pipe, char *ag, t_env **env_p)
 	else if (pid && first_redirection(ag) != -1)
 	{
 		file = get_file_names();
-		sigInit();
+		siginit();
 		waitpid(pid, &(g_var.exit_status), 0);
 		unlink(file);
 		free(file);
@@ -161,61 +161,47 @@ void    pipe_it(t_fd fd_pipe, char *ag, t_env **env_p)
 	}
 }
 
-void    pipe_loop(int **fd, int pnum, char **ag, t_env **env_p)
+void	pipe_loop(int **fd, int pnum, char **ag, t_env **env_p)
 {
 	t_fd	fd_pipe;
-    // char	**cmd;
-    int i;
+	int		i;
 
-    i = 1;
-	// cmd = custom_split(ag[0], ' ');
+	i = 1;
 	fd_pipe.in = -1;
 	fd_pipe.out = fd[0][1];
 	fd_pipe.rest = fd[0][0];
-    pipe_it (fd_pipe, ag[0], env_p);
-    // free_dp(cmd);
-    close(fd[0][1]);
-    while (i <= pnum)
-    {
-    	// cmd = custom_split(ag[i], ' ');
+	pipe_it (fd_pipe, ag[0], env_p);
+	close(fd[0][1]);
+	while (i <= pnum)
+	{
 		fd_pipe.in = fd[i - 1][0];
 		fd_pipe.out = fd[i][1];
 		fd_pipe.rest = fd[i][0];
 		pipe_it(fd_pipe, ag[i], env_p);
-        // free_dp(cmd);
-        close(fd[i - 1][0]);
-        close(fd[i][1]);
-        i++;
-    }
-    // cmd = custom_split(ag[i], ' ');
+		close(fd[i - 1][0]);
+		close(fd[i][1]);
+		i++;
+	}
 	fd_pipe.in = fd[i - 1][0];
 	fd_pipe.out = -2;
 	fd_pipe.rest = fd[i - 1][1];
 	pipe_it(fd_pipe, ag[i], env_p);
-    // free_dp(cmd);
-    close(fd[i - 1][0]);
-
-	while (wait(NULL) != -1);
+	close(fd[i - 1][0]);
+	while (wait(NULL) != -1)
+		;
 }
 
-
-int do_pipe(char *p, t_env **env_p)
+int	do_pipe(char *p, t_env **env_p)
 {
-    char **ag;
-    int **fd;
-	// int	i = 0;
+	char	**ag;
+	int		**fd;
+
 	ag = custom_split(p, '|');
-	// while(ag[i])
-	// g_var.dup_in = dup(STDIN_FILENO);
-	// g_var.dup_out = dup(STDOUT_FILENO);
-	// 	printf("ù%sù\n", ag[i++]);
-	// exit(0);
-    fd = prepare_pipe(ag);
+	fd = prepare_pipe(ag);
 	if (!fd)
 		return (write(2, "Error preparing fd forking\n", 27));
-    pipe_loop(fd, arg_len(ag) - 2, ag, env_p);
-    free_fd(fd, ag);
-    free_dp(ag); // hada hwa tableau dyal les commands 
-	// fache katkon 3andna rediraction katfreeya bache n3awdoha b command bla redi
+	pipe_loop(fd, arg_len(ag) - 2, ag, env_p);
+	free_fd(fd, ag);
+	free_dp(ag);
 	return (0);
 }

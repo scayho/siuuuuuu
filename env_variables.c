@@ -3,37 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   env_variables.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/24 16:43:48 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/30 21:28:56 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/17 14:26:46 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-void    fill_empty_env(t_env **env)
-{
-    // t_env   *new;
-    char    *tmp;
 
-    tmp = ft_strdup("PWD=");
-    tmp = join_free(tmp, g_var.pwd);
-    if (!tmp)
-        return (perror(tmp));
-    ft_lstadd_back(env, ft_lstnew(tmp));
-    free(tmp);
-    tmp = ft_strdup("SHLVL=");
-    tmp = join_free(tmp, "1");
-    if (!tmp)
-        return (perror(tmp));
-    ft_lstadd_back(env, ft_lstnew(tmp));
-    free(tmp);
-    tmp = ft_strdup("_=");
-    tmp = join_free(tmp, "usr/bin/env");
-    if (!tmp)
-        return (perror(tmp));
-    ft_lstadd_back(env, ft_lstnew(tmp));
-    free(tmp);
+void	fill_empty_env(t_env **env)
+{
+	char	*tmp;
+
+	tmp = ft_strdup("PWD=");
+	tmp = join_free(tmp, g_var.pwd);
+	if (!tmp)
+		return (perror(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp));
+	free(tmp);
+	tmp = ft_strdup("SHLVL=");
+	tmp = join_free(tmp, "1");
+	if (!tmp)
+		return (perror(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp));
+	free(tmp);
+	tmp = ft_strdup("_=");
+	tmp = join_free(tmp, "usr/bin/env");
+	if (!tmp)
+		return (perror(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp));
+	free(tmp);
 }
 
 void	set_env_vars(char **envp, t_env **env_p)
@@ -51,10 +51,8 @@ void	set_env_vars(char **envp, t_env **env_p)
 	if (!envp[0])
 	{
 		fill_empty_env(env_p);
-		// display(*env_p);
 	}
 }
-
 
 void	ft_putstr(char *s)
 {
@@ -78,7 +76,6 @@ void	display(t_env *p)
 		p = p->next;
 	}
 }
-
 
 char	*get_e_var_name(char *s)
 {
@@ -121,7 +118,6 @@ void	release_e_var(t_env **env_p)
 		iter = iter->next;
 		free(tmp->e_name);
 		free(tmp->e_value);
-
 		free(tmp);
 	}
 }
@@ -135,9 +131,11 @@ void	update_pwd_env(t_env **env_p, char *old_pwd, char *new_pwd)
 		return ;
 	while (iter)
 	{
-		if (!ft_strncmp(iter->e_name, "PWD", ft_strlen (iter->e_name) + ft_strlen("PWD")))
+		if (!ft_strncmp(iter->e_name, "PWD"
+				, ft_strlen (iter->e_name) + ft_strlen("PWD")))
 			update_pwd_vars(&(iter->e_value), new_pwd);
-		else if (!ft_strncmp(iter->e_name, "OLDPWD", ft_strlen (iter->e_name) + ft_strlen("OLDPWD")))
+		else if (!ft_strncmp(iter->e_name, "OLDPWD"
+				, ft_strlen (iter->e_name) + ft_strlen("OLDPWD")))
 			update_pwd_vars(&(iter->e_value), old_pwd);
 		iter = iter->next;
 	}

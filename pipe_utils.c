@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 16:52:43 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/28 20:35:43 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/17 18:16:52 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,28 +38,26 @@ int	**prepare_pipe(char **cmd)
 	return (fd);
 }
 
-void    free_fd(int **fd, char **ag)
+void	free_fd(int **fd, char **ag)
 {
 	int	p_num;
-    int i;
+	int	i;
 
-    i = 0;
+	i = 0;
 	p_num = arg_len(ag) - 1;
-    while (i < p_num)
-        free(fd[i++]);
-    free(fd);
+	while (i < p_num)
+		free(fd[i++]);
+	free(fd);
 }
 
-
-
-void    free_dp(char **s)
+void	free_dp(char **s)
 {
-    int i;
+	int	i;
 
-    i = 0;
+	i = 0;
 	if (!s)
 		return ;
-    while (s[i])
-        free(s[i++]);
-    free(s);
+	while (s[i])
+		free(s[i++]);
+	free(s);
 }

@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   built_ins.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/30 14:38:18 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/31 00:14:19 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/18 02:07:50 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int targ_size(t_arg *arg)
+int	targ_size(t_arg *arg)
 {
-	t_arg *iter;
-	int i;
-	
+	t_arg	*iter;
+	int		i;
+
 	i = 0;
 	iter = arg;
 	while (iter)
@@ -26,19 +26,19 @@ int targ_size(t_arg *arg)
 	}
 	return (i);
 }
-
-char **joincmd(t_arg *arg)
+// n9ass lines
+char	**joincmd(t_arg *arg)
 {
-	char **tab;
-	t_arg *iter;
-	int i;
+	char	**tab;
+	t_arg	*iter;
+	int		i;
 
 	i = targ_size(arg);
 	tab = malloc (sizeof(char *) * i + 1);
 	if (!tab)
 	{
 		dprintf(2, "unable to malloc table in built_in\n");
-		return(NULL);
+		return (NULL);
 	}
 	i = 0;
 	iter = arg;
@@ -47,28 +47,24 @@ char **joincmd(t_arg *arg)
 		tab[i] = ft_strdup(iter->arg);
 		if (iter->linked && iter->next)
 		{
-			iter= iter->next;
+			iter = iter->next;
 			while (iter->linked && iter && iter->next)
 			{
-				// printf("zebi :%s\n", tab[i]);
 				tab[i] = join_free(tab[i], iter->arg);
-				iter= iter->next;
+				iter = iter->next;
 			}
-			// printf("zebi :%s\n", tab[i]);
 			tab[i] = join_free(tab[i], iter->arg);
 		}
-		// printf("zebi :[%s]\n", tab[i]);
-		iter= iter->next;
+		iter = iter->next;
 		i++;
 	}
-	// dprintf(2, "zizo %d\n", i);
 	tab[i] = NULL;
 	return (tab);
 }
 
 int	built_in(char *buf, t_env **env_p, t_arg *arg)
 {
-	char **splited;
+	char	**splited;
 
 	(void)buf;
 	splited = joincmd(arg);
@@ -78,22 +74,21 @@ int	built_in(char *buf, t_env **env_p, t_arg *arg)
 		return (cd (splited, env_p), free_dp(splited), delete_arg(arg), 0);
 	else if (!ft_strcmp("pwd", splited[0]))
 		return (pwd(*env_p), free_dp(splited), delete_arg(arg), 0);
-	else if (!ft_strcmp("env", splited[0]) || !ft_strcmp("/usr/bin/env", splited[0]))
+	else if (!ft_strcmp("env", splited[0])
+		|| !ft_strcmp("/usr/bin/env", splited[0]))
 		return (env (*env_p, splited[1]), free_dp(splited), delete_arg(arg), 0);
 	else if (!ft_strcmp("export", splited[0]))
 		return (export (env_p, splited), free_dp(splited), delete_arg(arg), 0);
 	else if (!ft_strcmp("unset", splited[0]))
 		return (unset (env_p, splited), free_dp(splited), delete_arg(arg), 0);
-	else if (!ft_strcmp("exit", splited[0])) 
+	else if (!ft_strcmp("exit", splited[0]))
 	{
 		free_dp(splited);
 		delete_arg(arg);
 		release_e_var(env_p);
 		exit(0);
 	}
-	free_dp(splited);
-	delete_arg(arg);
-	return (1);
+	return (delete_arg(arg), free_dp(splited), 1);
 }
 
 int	cd(char **splited, t_env **env_p)
@@ -101,7 +96,7 @@ int	cd(char **splited, t_env **env_p)
 	char	*old_pwd;
 	char	*new_pwd;
 	char	*pwd;
-	
+
 	old_pwd = NULL;
 	new_pwd = NULL;
 	if (arg_len(splited) > 2)
@@ -265,6 +260,4 @@ int	unset(t_env **env_p, char **splited)
 		i++;
 	}
 	return (0);
-		
 }
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   if_directory.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 17:55:07 by hchahid           #+#    #+#             */
-/*   Updated: 2022/09/13 18:08:15 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/17 14:35:25 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,9 @@
 
 int	if_directory(char	*buf)
 {
-	struct stat st;
+	struct stat	st;
 
 	stat(buf, &st);
-	// if ((st.st_mode & S_IFMT) == S_IFDIR)
 	if (S_ISDIR(st.st_mode))
 	{
 		printf("%s: is a directory\n", buf);
