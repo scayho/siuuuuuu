@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/26 20:18:15 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/18 00:12:42 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 19:09:13 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ int	valid_export(char *s)
 	p = ft_strchr(s, '=');
 	if (!p || s[0] == '=' || s[0] == '+')
 	{
+		if (!p && !ft_strchr(s, '+'))
+			return (0);
 		ft_putstr_fd("invalid identifier\n", 2);
 		return (0);
 	}
@@ -196,7 +198,7 @@ void	get_pre_dir(void)
 	free(tmp);
 }
 
-void	 join_err_pwd(char *dir)
+void	join_err_pwd(char *dir)
 {
 	char	*r;
 	int		i;

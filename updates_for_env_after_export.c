@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 21:13:16 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/18 02:21:54 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 00:01:47 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,15 +25,56 @@ int	slash_in_end(char *path)
 	return (0);
 }
 
-int	does_env_exist(t_env **env_p, char *env_var)
+void	replace_path(char	*env_var)
 {
-	t_env	*iter;
-	char	*compared_to;
 	char	**tmp;
 	char	*tmp1;
 	int		i;
 
 	i = -1;
+	tmp = NULL;
+	if (g_var.paths)
+	{
+		tmp = g_var.paths;
+		while (*tmp)
+			free(*tmp++);
+		free(g_var.paths);
+	}
+	g_var.paths = ft_split(get_e_var_value(env_var), ':');
+	while (g_var.paths[++i])
+	{
+		tmp1 = g_var.paths[i];
+		if (!slash_in_end(g_var.paths[i]))
+			g_var.paths[i] = ft_strjoin(g_var.paths[i], "/");
+		free(tmp1);
+	}
+}
+
+void	replace_value(t_env **env, char *compared_to, char *env_var)
+{
+	t_env	*iter;
+
+	iter = *env;
+	if (!ft_strcmp(compared_to, iter->e_name))
+	{
+		if (compared_to[ft_strlen(compared_to) + 1] == 1)
+		{
+			iter->e_value = join_free(iter->e_value,
+					get_e_var_value(env_var));
+		}
+		else
+			change_env_value(iter, env_var);
+		free(compared_to);
+		return ;
+	}
+}
+
+int	does_env_exist(t_env **env_p, char *env_var)
+{
+	t_env	*iter;
+	char	*compared_to;
+	char	**tmp;
+
 	tmp = NULL;
 	iter = *env_p;
 	compared_to = get_e_var_name(env_var);
@@ -43,37 +84,10 @@ int	does_env_exist(t_env **env_p, char *env_var)
 		compared_to[ft_strlen(compared_to) + 1] = 1;
 	}
 	if (!ft_strncmp(compared_to, "PATH", 5))
-	{
-		if (g_var.paths)
-		{
-			tmp = g_var.paths;
-			while (*tmp)
-				free(*tmp++);
-			free(g_var.paths);
-		}
-		g_var.paths = ft_split(get_e_var_value(env_var), ':');
-		while (g_var.paths[++i])
-		{
-			tmp1 = g_var.paths[i];
-			if (!slash_in_end(g_var.paths[i]))
-				g_var.paths[i] = ft_strjoin(g_var.paths[i], "/");
-			free(tmp1);
-		}
-	}
+		replace_path(env_var);
 	while (iter)
 	{
-		if (!ft_strcmp(compared_to, iter->e_name))
-		{
-			if (compared_to[ft_strlen(compared_to) + 1] == 1)
-			{
-				iter->e_value = join_free(iter->e_value,
-						get_e_var_value(env_var));
-			}
-			else
-				change_env_value(iter, env_var);
-			free(compared_to);
-			return (1);
-		}
+		replace_value(&iter, compared_to, env_var);
 		iter = iter->next;
 	}
 	free(compared_to);

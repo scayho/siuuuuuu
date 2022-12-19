@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 16:52:43 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/17 18:16:52 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/17 18:05:38 by hchahid          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,18 +22,18 @@ int	**prepare_pipe(char **cmd)
 	p_num = arg_len(cmd) - 1;
 	fd = malloc (p_num * sizeof(int *));
 	if (!fd)
-		return (NULL); // put a failre error here
+		return (printf("issue allocating space\n"), NULL);
 	while (++i < p_num)
 	{
 		fd[i] = malloc (2 * sizeof(int ));
 		if (!fd[i])
-			return (NULL); // put a failre error here
+			return (printf("issue allocating space\n"), NULL);
 	}
 	i = -1;
 	while (++i < p_num)
 	{
 		if (pipe (fd[i]) < 0)
-			return (NULL); // put a failre error here
+			return (printf("issue in function pipe\n"), NULL);
 	}
 	return (fd);
 }
@@ -60,4 +60,11 @@ void	free_dp(char **s)
 	while (s[i])
 		free(s[i++]);
 	free(s);
+}
+
+void	fill_t_fd(t_fd *fd_pipe, int in, int out, int rest)
+{
+	fd_pipe->in = in;
+	fd_pipe->out = out;
+	fd_pipe->rest = rest;
 }

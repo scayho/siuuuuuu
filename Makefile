@@ -45,9 +45,11 @@ SRC = minishell.c env_variables.c env_vars1.c built_ins.c echo.c   \
 	pipe_utils.c \
 	redirection_split.c	\
 	cd.c \
+	cd1.c \
 	j.c \
 	remove_qoutes.c \
 	last_red_in.c \
+	env_handling.c	\
 	signals.c
 
 LIB = lib/ft_isalnum.c	 \

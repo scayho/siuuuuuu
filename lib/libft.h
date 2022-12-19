@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/06 18:37:22 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/31 00:35:56 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/19 19:17:50 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <stdbool.h>
+# include "paths.h"
 
 typedef struct s_star
 {
@@ -41,21 +42,10 @@ typedef struct s_line
 typedef struct s_arg
 {
 	char			*arg;
-	// bool			expand;
-    // char            *delemeter;
 	bool			linked;
 	bool			redirection;
 	struct s_arg	*next;
 }	t_arg;
-
-// typedef struct s_arg
-// {
-// 	char			*arg;
-// 	bool			expand;
-// 	bool			linked;
-// 	struct s_arg	*next;
-// }	t_arg;
-
 
 typedef struct s_fd
 {
@@ -69,19 +59,17 @@ typedef struct s_env
 	char			*e_name;
 	char			*e_value;
 	struct s_env	*next;
-} t_env;
+}	t_env;
 
 typedef struct s_var
 {
 	char	**paths;
 	char	*err_pwd;
 	char	*pwd;
-	int 	exit_status;
-	int 	dup_in;
-	int 	dup_out;
+	int		exit_status;
 }	t_var;
 
-t_var g_var;
+t_var	g_var;
 t_arg	*last_arg(t_arg *lst);
 int		add_back_arg(t_arg **lst, t_arg *new);
 
@@ -123,12 +111,12 @@ size_t	ft_strlcat(char *dst, const char *src, size_t dstsize);
 char	*ft_strdup(const char *s1);
 
 int		ft_lstadd_back(t_env **lst, t_env *new);
-t_env	*ft_lstnew(char *e_var);
+t_env	*ft_lstnew(char *e_var, int check);
+// t_env	*ft_lstnew(char *e_var);
 t_env	*ft_lstlast(t_env *lst);
 int		ft_lstsize(t_env *lst);
 void	del(t_env **env_p, t_env *var);
 void	mid_end(t_env **env_p, t_env *var);
-
 
 void	ft_lstadd_front(t_list **lst, t_list *new);
 
@@ -139,11 +127,9 @@ void	ft_lstclear(t_list **lst, void (*del)(void *));
 void	*ft_calloc(size_t count, size_t size);
 char	**ft_split(char const *str, char c);
 
-
 char	*get_e_var_value(char *value);
 char	*get_e_var_name(char *s);
 void	remove_path(void);
-
-int	valid_export(char *s);
+int		valid_export(char *s);
 
 #endif

@@ -3,40 +3,38 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/30 12:26:27 by hchahid           #+#    #+#             */
-/*   Updated: 2022/10/30 13:22:37 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/19 17:59:27 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	e_acces(char *s, char *new_pwd, char *old_pwd, t_env **env_p)
+int	cd(char **splited, t_env **env_p)
 {
-	if (!ft_strcmp("./", s) || !ft_strcmp(".", s))
+	char	*old_pwd;
+	char	*new_pwd;
+	char	*pwd;
+
+	old_pwd = NULL;
+	new_pwd = NULL;
+	old_pwd = getcwd(NULL, 0);
+	if (!splited[1])
+		return (cd_home(env_p, old_pwd, new_pwd));
+	pwd = getcwd(NULL, 0);
+	if (directory_err_cases(pwd, splited[1]))
 	{
-		perror(s);
-		return (0);
+		chdir(g_var.pwd);
+		if (errno == EACCES)
+			return (e_acces(splited[1], new_pwd, old_pwd, env_p));
+		else
+			false_dir(old_pwd, new_pwd, splited, env_p);
 	}
-	free(old_pwd);
-	old_pwd = ft_strdup(g_var.pwd);
-	new_pwd = ft_strdup(g_var.pwd);
-	cut_pre_dir(&new_pwd);
-	if (access(new_pwd, X_OK))
-	{
-		perror(s);
-		free(old_pwd);
-		free(new_pwd);
-		return (0);
-	}
-	get_pre_dir();
-	chdir (g_var.pwd);
-	free(new_pwd);
-	new_pwd = ft_strdup(g_var.pwd);
-	update_pwd_env(env_p, old_pwd, new_pwd);
-	free(old_pwd);
-	free(new_pwd);
+	else
+		valid_cd(new_pwd, old_pwd, splited[1], env_p);
+	free(pwd);
 	return (0);
 }
 
@@ -44,7 +42,8 @@ int	cd_home(t_env **env_p, char *old_pwd, char *new_pwd)
 {
 	new_pwd = extract_evar_value(*env_p, "HOME");
 	if (!new_pwd)
-		return (ft_putstr_fd("cd: HOME not set\n", STDOUT_FILENO), 0);
+		return (free(old_pwd),
+			ft_putstr_fd("cd: HOME not set\n", STDOUT_FILENO), 0);
 	else if (chdir(new_pwd))
 	{
 		if (old_pwd)
@@ -65,4 +64,56 @@ int	cd_home(t_env **env_p, char *old_pwd, char *new_pwd)
 		free(old_pwd);
 	}
 	return (0);
+}
+
+void	current_directory_error(char *old_pwd, char *new_pwd,
+	char **splited, t_env **env_p)
+{
+	free(old_pwd);
+	old_pwd = ft_strdup(g_var.err_pwd);
+	join_err_pwd(splited[1]);
+	new_pwd = ft_strdup(g_var.err_pwd);
+	update_pwd_env(env_p, old_pwd, new_pwd);
+	free(new_pwd);
+	free(old_pwd);
+	retrieving_err();
+}
+
+void	previous_directory_error(char *old_pwd, char *new_pwd,
+	char **splited, t_env **env_p)
+{
+	free(old_pwd);
+	old_pwd = ft_strdup(g_var.err_pwd);
+	join_err_pwd(splited[1]);
+	get_pre_dir();
+	if (!chdir(g_var.pwd))
+	{
+		free(g_var.err_pwd);
+		g_var.err_pwd = NULL;
+		new_pwd = ft_strdup(g_var.pwd);
+		update_pwd_env(env_p, old_pwd, new_pwd);
+		free(new_pwd);
+		free(old_pwd);
+		return ;
+	}
+	new_pwd = ft_strdup(g_var.err_pwd);
+	update_pwd_env(env_p, old_pwd, new_pwd);
+	free(new_pwd);
+	free(old_pwd);
+	retrieving_err();
+}
+
+void	valid_cd(char *new_pwd, char *old_pwd, char *dir, t_env **env_p)
+{
+	if (chdir(dir))
+		perror(dir);
+	else
+	{
+		new_pwd = getcwd(NULL, 0);
+		free(g_var.pwd);
+		g_var.pwd = getcwd(NULL, 0);
+		update_pwd_env(env_p, old_pwd, new_pwd);
+		free(new_pwd);
+	}
+	free(old_pwd);
 }

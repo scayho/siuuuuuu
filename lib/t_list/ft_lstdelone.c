@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_lstdelone.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/21 17:44:29 by hchahid           #+#    #+#             */
-/*   Updated: 2022/08/29 12:07:51 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/19 19:17:38 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,7 @@
 void	mid_end_arg(t_arg **env_p, t_arg *var)
 {
 	t_arg	*iter;
-	// int	i;
 
-	// i = 0;
 	iter = *env_p;
 	while (iter->next != var)
 	{
@@ -27,12 +25,11 @@ void	mid_end_arg(t_arg **env_p, t_arg *var)
 	free(var->arg);
 	free(var);
 }
+
 void	del_arg(t_arg **env_p, t_arg *var)
 {
 	t_arg	*iter;
-	// int		i;
 
-	// i = 0;
 	iter = *env_p;
 	if (iter == var)
 	{
@@ -47,9 +44,7 @@ void	del_arg(t_arg **env_p, t_arg *var)
 void	del(t_env **env_p, t_env *var)
 {
 	t_env	*iter;
-	// int		i;
 
-	// i = 0;
 	iter = *env_p;
 	if (iter == var)
 	{
@@ -65,9 +60,7 @@ void	del(t_env **env_p, t_env *var)
 void	mid_end(t_env **env_p, t_env *var)
 {
 	t_env	*iter;
-	// int	i;
 
-	// i = 0;
 	iter = *env_p;
 	while (iter->next != var)
 	{

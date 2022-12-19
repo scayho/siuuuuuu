@@ -72,3 +72,11 @@ fclean: clean
 re: fclean all
 
 .PHONY: clean fclean
+
+
+## export/env with spaces
+## export with var without value / it should export it
+## cd - / it should go to OLDPWD
+## exit status / always your program should exit woth last exit status/ set var in your struct named (exit_status) and everytime you wanna exit it should exit with it (var in your struct)
+## execute minishell without env (env -i) / #include "path.h" _PATH_STDPATH
+## herdoc / when Del was $USER

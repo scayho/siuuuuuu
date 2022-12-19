@@ -6,22 +6,16 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 15:59:05 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/18 01:45:06 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 19:14:11 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ffree(char **s)
-{
-	free(*s);
-	*s = NULL;
-}
-
 char	**list_to_tab(t_env *env)
 {
-	t_env	*t;
 	char	**tab;
+	t_env	*t;
 	int		i;
 
 	i = 0;
@@ -45,22 +39,26 @@ char	**list_to_tab(t_env *env)
 	return (tab);
 }
 
-void	nopath(char **splited)
+void	no_path(char **splited)
 {
 	printf("\033[0;31m %s: No such file or directory\n", splited[0]);
 	free_dp(splited);
 	exit(127);
 }
 
-void	binaryfile(char **splited)
+void	binary_file(char **splited, t_env **env)
 {
+	char	**tb;
+
+	tb = list_to_tab(*env);
+	execve(splited[0], splited, tb);
 	execve(splited[0], splited, NULL);
 	printf("\033[0;31m %s: No such file or directory\n", splited[0]);
 	free_dp(splited);
 	exit(127);
 }
 
-void	checkforbinaries(char **splited, t_env **env)
+void	check_for_binaries(char **splited, t_env **env)
 {
 	char	**tb;
 	char	*cmd;
@@ -83,42 +81,75 @@ void	checkforbinaries(char **splited, t_env **env)
 	perror (cmd);
 }
 
-void	cmd(char *buf, t_env **env)
+char	**prepar_tb_cmd(t_arg *arg)
+{
+	t_arg	*iter;
+	int		i;
+	char	**tb;
+
+	i = 0;
+	iter = arg;
+	while (iter)
+	{
+		i++;
+		iter = iter->next;
+	}
+	tb = malloc (sizeof(char *) * i + 1);
+	if (!tb)
+		return (ft_putstr_fd("failed to allocate \n", 2), NULL);
+	iter = arg;
+	i = 0;
+	while (iter)
+	{
+		tb[i] = eraseqout(iter->arg, markqout(iter->arg));
+		iter = iter->next;
+		i++;
+	}
+	tb[i] = NULL;
+	delete_arg(arg);
+	return (tb);
+}
+
+char	**remove_qoutes_splited(char	**buf)
+{
+	int	i;
+
+	i = 0;
+	while (buf[i])
+	{
+		buf[i] = eraseqout(buf[i], markqout(buf[i]));
+		if (!buf[i])
+			return (NULL);
+		i++;
+	}
+	return (buf);
+}
+
+void	cmd(t_arg *arg, t_env **env)
 {
 	char	**splited;
 
-	buf = eraseqout(buf, markqout(buf));
-	splited = ft_split(buf, ' ');
+	splited = joincmd(arg);
+	splited = remove_qoutes_splited(splited);
+	if (!splited)
+		return (ft_putstr_fd("error allocation", 2), exit(1));
 	if (!splited[0])
 		exit(1);
+	if (!splited[0][0])
+		return (ft_putstr_fd("command not found\n", 2), exit(127));
 	if (if_directory(splited[0]))
-	{
-		free_dp(splited);
-		exit (126);
-	}
+		return (free_dp(splited), exit (126));
 	else
 	{
 		if (!g_var.paths)
-			nopath(splited);
+			no_path(splited);
 		if (splited[0][0] == '/')
-			binaryfile(splited);
+			binary_file(splited, env);
 		else
-			checkforbinaries(splited, env);
+			check_for_binaries(splited, env);
 	}
 	free_dp(splited);
 	exit(127);
-}
-
-void	check_exit_status(int pid)
-{
-	if (WIFEXITED(g_var.exit_status))
-		g_var.exit_status = WEXITSTATUS(g_var.exit_status);
-	else if (WIFSIGNALED(g_var.exit_status))
-	{
-		g_var.exit_status = WTERMSIG(g_var.exit_status);
-		if (g_var.exit_status == SIGQUIT)
-			printf("^\\[1] %d Quit\n", pid);
-	}
 }
 
 int	istherepipe(char *s)
@@ -148,10 +179,10 @@ void	executables(char *buf, t_env **env_p)
 	else
 	{
 		if (pid == 0)
-			cmd(buf, env_p);
+			cmd(get_args(buf, env_p), env_p);
 		else
 		{
-			siginit();
+			sig_init();
 			waitpid(pid, &(g_var.exit_status), 0);
 			check_exit_status(pid);
 		}
@@ -183,7 +214,7 @@ int	execute(char *buf, t_env **env_p)
 {
 	int	pipecheck;
 
-	sigdefault();
+	sig_default();
 	pipecheck = istherepipe(buf);
 	if (pipecheck != -1)
 	{
@@ -192,7 +223,7 @@ int	execute(char *buf, t_env **env_p)
 		return (0);
 	}
 	execute2(buf, env_p);
-	siginit();
+	sig_init();
 	return (0);
 }
 
@@ -201,7 +232,7 @@ int	execute_pipe(char *buf, t_env **env_p)
 	if (!built_in(buf, env_p, get_args(buf, env_p)))
 		;
 	else
-		cmd(buf, env_p);
+		cmd(get_args(buf, env_p), env_p);
 	free(buf);
 	return (0);
 }
@@ -213,33 +244,18 @@ int	execute_redirection_pipe(char *buf, t_env **env_p, char *file, t_arg *arg)
 	if (!built_in(buf, env_p, arg))
 		;
 	else
-	{
-		cmd(buf, env_p);
-	}
+		cmd(get_args(buf, env_p), env_p);
 	(void)file;
 	free(buf);
 	exit (0);
 	return (0);
-}
-// n9ass lines
-
-void	execute_redirection_extra(int pid, char *buf, t_env **env_p)
-{
-	if (pid == 0)
-	{
-		cmd(buf, env_p);
-	}
-	else
-	{
-		waitpid(pid, &(g_var.exit_status), 0);
-		check_exit_status(pid);
-	}
 }
 
 int	execute_redirection(char *buf, t_env **env_p, char *file)
 {
 	int	pid;
 
+	(void)file;
 	if (!buf)
 		return (0);
 	if (!built_in(buf, env_p, get_args(buf, env_p)))
@@ -251,11 +267,17 @@ int	execute_redirection(char *buf, t_env **env_p, char *file)
 		if (pid == -1)
 			return (printf("\033[0;31mUnable to create processe\n"));
 		else
-			execute_redirection_extra(pid, buf, env_p);
+		{
+			if (pid == 0)
+				cmd(get_args(buf, env_p), env_p);
+			else
+			{
+				waitpid(pid, &(g_var.exit_status), 0);
+				check_exit_status(pid);
+			}
+		}
 	}
-	unlink(file);
-	free(buf);
-	return (0);
+	return (unlink(file), free(buf), 0);
 }
 
 char	*join_list(t_arg *cmd)
@@ -288,7 +310,7 @@ void	init(t_env **env, char **envp)
 {
 	modify_attr();
 	set_env_vars(envp, env);
-	siginit();
+	sig_init();
 }
 
 int	syntax(char *buf)
@@ -332,5 +354,3 @@ int	main(int ac, char **av, char **envp)
 		execute(empty_string(buf), &env_p);
 	}
 }
-		// buf = empty_string(buf);
-		// execute(buf, &env_p);

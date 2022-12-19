@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/24 16:43:48 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/17 14:26:46 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/18 17:03:28 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,19 @@ void	fill_empty_env(t_env **env)
 	tmp = join_free(tmp, g_var.pwd);
 	if (!tmp)
 		return (perror(tmp));
-	ft_lstadd_back(env, ft_lstnew(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp, 1));
 	free(tmp);
 	tmp = ft_strdup("SHLVL=");
 	tmp = join_free(tmp, "1");
 	if (!tmp)
 		return (perror(tmp));
-	ft_lstadd_back(env, ft_lstnew(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp, 1));
 	free(tmp);
 	tmp = ft_strdup("_=");
 	tmp = join_free(tmp, "usr/bin/env");
 	if (!tmp)
 		return (perror(tmp));
-	ft_lstadd_back(env, ft_lstnew(tmp));
+	ft_lstadd_back(env, ft_lstnew(tmp, 1));
 	free(tmp);
 }
 
@@ -42,9 +42,7 @@ void	set_env_vars(char **envp, t_env **env_p)
 
 	i = 0;
 	while (envp[i])
-	{
-		ft_lstadd_back(env_p, ft_lstnew(envp[i++]));
-	}
+		ft_lstadd_back(env_p, ft_lstnew(envp[i++], 0));
 	g_var.pwd = getcwd(NULL, 0);
 	g_var.err_pwd = NULL;
 	g_var.exit_status = 0;

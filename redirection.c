@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 18:46:16 by hchahid           #+#    #+#             */
-/*   Updated: 2022/12/17 19:46:42 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 17:54:19 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ char	**get_dir_files(int i)
 	files = malloc(sizeof(char *) * i + 1);
 	if (!files)
 	{
-		dprintf(2, "tableau de file names not allocated\n");
+		ft_putstr_fd("tableau de file names not allocated\n", 2);
 		return (NULL);
 	}
 	file_dir = readdir(dir);
@@ -208,8 +208,10 @@ void	fail_exec_redi_pipe_input(char *cmd, int i, char *name)
 {
 	cmd = exlude_name(cmd, i, 0);
 	extande_heredoc(cmd);
-	dprintf(2, "%s\n", cmd);
-	dprintf(2, "%s : no such file or directory\n", name);
+	ft_putstr_fd(cmd, 2);
+	ft_putchar_fd('\n', 2);
+	ft_putstr_fd(name, 2);
+	ft_putstr_fd(" : no such file or directory\n", 2);
 	exit(1);
 }
 
@@ -235,7 +237,7 @@ char	*exec_redi_pipe_input(char *cmd, int i)
 			;
 		else if (dup2(input1, STDIN_FILENO) == -1)
 		{
-			dprintf(2, "failed to dup2 \n");
+			ft_putstr_fd("failed to dup2 \n", 2);
 			exit(0);
 		}
 		close(input1);
@@ -256,7 +258,7 @@ void	exec_redi_pipe_herdoc2(char	*name)
 	input1 = open(file, O_CREAT | O_RDWR, 0664);
 	if (dup2(input1, STDIN_FILENO) == -1)
 	{
-		dprintf(2, "failed to dup2 \n");
+		ft_putstr_fd("failed to dup2 \n", 2);
 		exit(0);
 	}
 	close(input1);
@@ -345,7 +347,7 @@ void	redirection(t_arg *command, char *buf, t_env **env_p)
 		execute_redirection(buf, env_p, file);
 		exit(0);
 	}
-	siginit();
+	sig_init();
 	waitpid(pid, &(g_var.exit_status), 0);
 	free(file);
 	delete_arg(command);
@@ -358,7 +360,7 @@ int	redirect_output(char *name, unsigned int open_flag)
 
 	file = open (name, O_RDWR | O_CREAT | open_flag, 0664);
 	if (file == -1)
-		exit (printf("llllIssue opening file1\n"));
+		exit (printf("Issue opening file1\n"));
 	if (dup2(file, STDOUT_FILENO) == -1)
 	{
 		exit (printf("Issue opening file2\n"));

@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 19:45:38 by abelahce          #+#    #+#             */
-/*   Updated: 2022/12/17 19:52:37 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 01:55:24 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,26 @@ void	sighandle(int sig)
 	}
 }
 
-void	siginit(void)
+void	sig_init(void)
 {
 	signal(SIGINT, sighandle);
 	signal(SIGQUIT, SIG_IGN);
 }
 
-void	sigdefault(void)
+void	sig_default(void)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+}
+
+void	check_exit_status(int pid)
+{
+	if (WIFEXITED(g_var.exit_status))
+		g_var.exit_status = WEXITSTATUS(g_var.exit_status);
+	else if (WIFSIGNALED(g_var.exit_status))
+	{
+		g_var.exit_status = WTERMSIG(g_var.exit_status);
+		if (g_var.exit_status == SIGQUIT)
+			printf("^\\[1] %d Quit\n", pid);
+	}
 }

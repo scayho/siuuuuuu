@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 19:47:55 by abelahce          #+#    #+#             */
-/*   Updated: 2022/12/18 01:01:23 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 18:55:36 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,48 @@ int	after_star(t_star s)
 	return (1);
 }
 
+char	*new_arg_sq(char *arg)
+{
+	char	*tmp;
+
+	if (arg[0] == '\'')
+	{
+		tmp = arg;
+		arg = ft_substr(arg, 1, ft_strlen(arg) - 2);
+		free(tmp);
+	}
+	return (arg);
+}
+
+char	*new_arg_dq(char *arg, t_env **env_p, t_star s, t_arg *r)
+{
+	char	*tmp;
+
+	if (arg[0] == '"')
+	{
+		tmp = arg;
+		arg = ft_substr(arg, 1, ft_strlen(arg) - 2);
+		free(tmp);
+		arg = replace_env(arg, env_p);
+	}
+	else
+	{
+		if (!ft_strcmp(arg, "*") && wildcardcheck(r, last_arg(r))
+			&& after_star(s))
+		{
+			arg = full_replace_env(arg, env_p);
+		}
+		else
+		{
+			arg = replace_env(arg, env_p);
+		}
+	}
+	return (arg);
+}
+
 t_arg	*new_arg(t_env **env_p, t_arg *r, t_star s, char linked)
 {
 	t_arg	*new;
-	char	*tmp;
 	char	*arg;
 
 	(void)env_p;
@@ -102,36 +140,9 @@ t_arg	*new_arg(t_env **env_p, t_arg *r, t_star s, char linked)
 	new->linked = linked;
 	new->redirection = s.is_rediraction;
 	if (arg[0] == '\'' || is_redirection(arg[0]))
-	{
-		if (arg[0] == '\'')
-		{
-			tmp = arg;
-			arg = ft_substr(arg, 1, ft_strlen(arg) - 2);
-			free(tmp);
-		}
-	}
+		arg = new_arg_sq(arg);
 	else
-	{
-		if (arg[0] == '"')
-		{
-			tmp = arg;
-			arg = ft_substr(arg, 1, ft_strlen(arg) - 2);
-			free(tmp);
-			arg = replace_env(arg, env_p);
-		}
-		else
-		{
-			if (!ft_strcmp(arg, "*") && wildcardcheck(r, last_arg(r))
-				&& after_star(s))
-			{
-				arg = full_replace_env(arg, env_p);
-			}
-			else
-			{
-				arg = replace_env(arg, env_p);
-			}
-		}
-	}
+		arg = new_arg_dq(arg, env_p, s, r);
 	new->arg = arg;
 	new->next = NULL;
 	return (new);
@@ -305,51 +316,63 @@ t_arg	*remove_qoutess(t_arg *comand)
 	return (comand);
 }
 
+int	get_heredoc_arg(char *buf, t_hold *c, t_star star, t_arg **r)
+{
+	c->i += end_of_name(buf + c->i);
+	star.arg = ft_substr(buf, c->index, c->i - c->index + 1);
+	star.is_rediraction = 1;
+	if (add_back_arg(r, new_arg(c->env, *r, star, 0)))
+		return (1);
+	return (0);
+}
+
+int	get_normal_arg(char *buf, t_hold *c, t_star star, t_arg **r)
+{
+	int	check;
+
+	check = 0;
+	c->i += end_of_arg(buf + c->i);
+	star.is_rediraction = 0;
+	star.arg = ft_substr(buf, c->index, c->i - c->index + 1);
+	if (buf[c->i + 1] && !is_space(buf[c->i + 1]))
+		check = add_back_arg(r, new_arg(c->env, *r, star, 1));
+	else
+		check = add_back_arg(r, new_arg(c->env, *r, star, 0));
+	return (check);
+}
+
+int	skip_space(char *buf, int i)
+{
+	while (is_space(buf[i]))
+			i++;
+	return (i);
+}
+
 t_arg	*get_args(char *s, t_env **env)
 {
-	t_arg	*r;
-	int		check;
-	int		index;
 	t_star	star;
-	int		i;
+	t_arg	*r;
+	t_hold	c;
+	int		check;
 
-	i = 0;
+	c.i = 0;
+	c.env = env;
 	r = NULL;
 	star.buf = s;
-	while (s[i])
+	while (s[c.i])
 	{
-		while (is_space(s[i]))
-			i++;
-		index = i;
-		star.index = i;
-		if (s[i] == '<' || s[i] == '>')
-		{
-			i += end_of_name(s + i);
-			star.arg = ft_substr(s, index, i - index + 1);
-			star.is_rediraction = 1;
-			check = add_back_arg(&r, new_arg(env, r, star, 0));
-		}
+		c.i = skip_space(s, c.i);
+		c.index = c.i;
+		star.index = c.i;
+		if (!s[c.i])
+			break ;
+		if (s[c.i] == '<' || s[c.i] == '>')
+			check = get_heredoc_arg(s, &c, star, &r);
 		else
-		{
-			i += end_of_arg(s + i);
-			star.is_rediraction = 0;
-			if (s[i + 1] && !is_space(s[i + 1]))
-			{
-				star.arg = ft_substr(s, index, i - index + 1);
-				check = add_back_arg(&r, new_arg(env, r, star, 1));
-			}
-			else
-			{
-				star.arg = ft_substr(s, index, i - index + 1);
-				check = add_back_arg(&r, new_arg(env, r, star, 0));
-			}
-		}
+			check = get_normal_arg(s, &c, star, &r);
 		if (check)
 			return (delete_arg(r), NULL);
-		if (!s[i])
-			break ;
-		i++;
+		c.i++;
 	}
-	r = remove_qoutess(r);
-	return (r);
+	return (remove_qoutess(r));
 }

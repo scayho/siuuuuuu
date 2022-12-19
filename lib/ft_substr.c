@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_substr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hchahid <hchahid@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/17 22:42:54 by hchahid           #+#    #+#             */
-/*   Updated: 2022/08/30 18:32:52 by hchahid          ###   ########.fr       */
+/*   Updated: 2022/12/19 19:16:52 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,5 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 	while (i < len && s[start])
 		p[i++] = s[start++];
 	p[i] = '\0';
-	// printf(">>>>> %zu\n", len);
 	return (p);
 }

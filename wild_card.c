@@ -6,7 +6,7 @@
 /*   By: abelahce <abelahce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 20:05:20 by abelahce          #+#    #+#             */
-/*   Updated: 2022/12/17 20:08:17 by abelahce         ###   ########.fr       */
+/*   Updated: 2022/12/19 19:11:04 by abelahce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,10 +51,7 @@ char	*wildcard(void)
 	r = NULL;
 	dir = opendir(".");
 	if (!dir)
-	{
-		write(2, "Opendir issue\n", 14);
-		return (NULL);
-	}
+		return (write(2, "Opendir issue\n", 14), NULL);
 	file_dir = readdir(dir);
 	if (!file_dir)
 		return (NULL);
@@ -71,6 +68,5 @@ char	*wildcard(void)
 		}
 		file_dir = readdir(dir);
 	}
-	closedir(dir);
-	return (r);
+	return (closedir(dir), r);
 }
